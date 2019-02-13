@@ -39,7 +39,7 @@ public:
 		{
 			//取一个内存块
 			obj = _freelist;
-
+      _freelist = OBJ_NEXT(_freelist);
 		}
 		else  //表示自由链表中没有
 		{

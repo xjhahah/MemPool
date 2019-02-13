@@ -6,5 +6,7 @@ using namespace std;
 
 int main()
 {
+  ObjectPool op;
+  
 	return 0;
 }
