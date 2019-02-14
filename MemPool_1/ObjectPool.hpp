@@ -22,13 +22,19 @@ protected:
 			_byteleft = bytesize;
 			_next = nullptr;
 		}
+		~Block()
+		{
+			free(_start);
+			_bytesize = _byteleft = 0;
+			_next = nullptr;
+		}
 	};
 public:
-	ObjectPool(size_t initnum = 16)
+	ObjectPool(size_t initnum = 8)
 	{
 		_head = _tail = new Block(initnum*sizeof(T));
 	}
-	T* OBJ_NEXT(T* obj)
+	T* OBJ_NEXT(T* obj)  
 	{
 		return (*(T**)obj);
 	}
@@ -39,7 +45,7 @@ public:
 		{
 			//取一个内存块
 			obj = _freelist;
-      _freelist = OBJ_NEXT(_freelist);
+			_freelist = OBJ_NEXT(_freelist);
 		}
 		else  //表示自由链表中没有
 		{
@@ -57,6 +63,7 @@ public:
 	}
 	void Delete(T* ptr)
 	{
+		ptr->~T();
 		if (_freelist == nullptr)
 		{
 			_freelist = ptr;
@@ -69,7 +76,35 @@ public:
 			_freelist = ptr;
 		}
 	}
-
+	void Destory()
+	{
+		Block* cur = _head;
+		while (cur)
+		{
+			Block* next = cur->next;
+			delete cur;
+			cur = next;
+		}
+		_freelist = nullptr;
+		_head = nullptr;
+		_tail = nullptr;
+	}
+	~ObjectPool()
+	{
+		Destory();
+	}
+protected:
+	static size_t GetItemSize()
+	{
+		if (sizeof(T) > sizeof(T*))
+		{
+			return sizeof(T);
+		}
+		else
+		{
+			return sizeof(T*);
+		}
+	}
 protected:	
 	//自由链表
 	T* _freelist = nullptr;
